@@ -294,6 +294,21 @@ void iplc_sim_push_pipeline_stage()
     /* 2. Check for BRANCH and correct/incorrect Branch Prediction */
     if (pipeline[DECODE].itype == BRANCH) {
         int branch_taken = 0;
+
+		if (pipeline[FETCH].instruction_address){
+			// if PC + 4 was not the next instruction, then you know the branch was taken
+			if (pipeline[FETCH].instruction_address != pipeline[DECODE].instruction_address + 4){
+				branch_taken = 1;
+			}
+
+			if (branch_taken == branch_predict_taken){
+				correct_branch_predictions++;
+			}else{
+				if (pipeline[FETCH].itype != NOP){
+					pipeline_cycles++;
+				}
+			}
+		}
     }
 
     /* 3. Check for LW delays due to use in ALU stage and if data hit/miss
@@ -301,15 +316,33 @@ void iplc_sim_push_pipeline_stage()
      */
     if (pipeline[MEM].itype == LW) {
         int inserted_nop = 0;
+
+		    hit = iplc_sim_trap_address(pipeline[MEM].stage.lw.data_address);
+
     }
 
     /* 4. Check for SW mem acess and data miss .. add delay cycles if needed */
     if (pipeline[MEM].itype == SW) {
+        // Check if data address is valid
+        hit = iplc_sim_trap_address(pipeline[MEM].stage.sw.data_address);
+        if(!hit)
+      {
+          printf("DATA MISS:\tAddress %x\n", data_address);
+          pipeline_cycles += CACHE_MISS_DELAY - 1; // -1 for the missing cycle
+      }
     }
 
     /* 5. Increment pipe_cycles 1 cycle for normal processing */
-    /* 6. push stages thru MEM->WB, ALU->MEM, DECODE->ALU, FETCH->ALU */
-
+    pipeline_cycles ++;
+    /* 6. push stages thru MEM->WB, ALU->MEM, DECODE->ALU, FETCH->ALU ???? FETCH->DECODE ???? */
+    //MEM->WB
+    memcpy( &pipeline[WRITEBACK], &pipeline[MEM], sizeof(pipeline_t) );
+    //ALU->MEM
+    memcpy( &pipeline[MEM], &pipeline[ALU], sizeof(pipeline_t) );
+    //DECODE->ALU
+    memcpy( &pipeline[ALU], &pipeline[DECODE], sizeof(pipeline_t) );
+    //FETCH->ALU
+    memcpy( &pipeline[DECODE], &pipeline[FETCH], sizeof(pipeline_t) );
     // 7. This is a give'me -- Reset the FETCH stage to NOP via bezero */
     bzero(&(pipeline[FETCH]), sizeof(pipeline_t));
 }
