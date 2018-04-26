@@ -301,7 +301,7 @@ void iplc_sim_push_pipeline_stage()
 				branch_taken = 1;
 			}
 
-            // if Branch Prediction on the Mode Taken, then the branch prediction was correct
+            // if Branch Prediction on the Mode not taken, then the branch prediction was correct
 			if (branch_taken == branch_predict_taken){
 				correct_branch_predictions++;
 			}else{ // If the prediciton was wrong then there is a penalty
@@ -309,7 +309,7 @@ void iplc_sim_push_pipeline_stage()
                 for (i = MAX_STAGES - 1; i > 1; i--) {
                     pipeline[i] = pipeline[i-1];
                 }
-                //insert nop
+
                 bzero(&(pipeline[DECODE]), sizeof(pipeline_t));
 
                 if (pipeline[WRITEBACK].instruction_address) {
