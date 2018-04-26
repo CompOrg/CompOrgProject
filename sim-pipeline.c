@@ -63,7 +63,7 @@ unsigned int data_address=0;
 unsigned int instruction_address=0;
 unsigned int pipeline_cycles=0;   // how many cycles did you pipeline consume
 unsigned int instruction_count=0; // home many real instructions ran thru the pipeline
-unsigned int branch_predict_taken=0;
+unsigned int branch_predict_taken=0; // assume the branch is not taken
 unsigned int branch_count=0;
 unsigned int correct_branch_predictions=0;
 
